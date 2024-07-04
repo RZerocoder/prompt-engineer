@@ -6,7 +6,7 @@ import requests
 
 app = FastAPI()
 
-openai.api_key = os.environ["OPENAI_API_KEY"]
+openai.api_key = os.environ["sk-proj-sjiGvSuxbSGtKRl5dnnUT3BlbkFJjV5TCvg3aMA9MlRP5Y13"]
 
 class Topic(BaseModel):
     topic: str
