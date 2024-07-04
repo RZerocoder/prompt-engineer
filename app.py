@@ -1,14 +1,14 @@
 import os
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from pydantic import BaseModel
-import openai
 import requests
+from openai import OpenAI
 
 app = FastAPI()
 
-# Получение ключа API из переменной окружения
-openai.api_key = os.getenv("OPENAI_API_KEY")
-if openai.api_key is None:
+# Инициализация клиента OpenAI
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+if client.api_key is None:
     raise ValueError("OPENAI_API_KEY environment variable not set")
 
 class Topic(BaseModel):
@@ -25,7 +25,7 @@ def generate_post(topic):
     recent_news = get_recent_news(topic)
 
     prompt_title = f"Придумайте привлекательный заголовок для поста на тему: {topic}"
-    response_title = openai.ChatCompletion.create(
+    response_title = client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[{"role": "user", "content": prompt_title}],
         max_tokens=50,
@@ -36,7 +36,7 @@ def generate_post(topic):
     title = response_title.choices[0].message.content.strip()
 
     prompt_meta = f"Напишите краткое, но информативное мета-описание для поста с заголовком: {title}"
-    response_meta = openai.ChatCompletion.create(
+    response_meta = client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[{"role": "user", "content": prompt_meta}],
         max_tokens=100,
@@ -47,7 +47,7 @@ def generate_post(topic):
     meta_description = response_meta.choices[0].message.content.strip()
 
     prompt_post = f"Напишите подробный и увлекательный пост для блога на тему: {topic}, учитывая следующие последние новости:\n{recent_news}\n\nИспользуйте короткие абзацы, подзаголовки, примеры и ключевые слова для лучшего восприятия и SEO-оптимизации."
-    response_post = openai.ChatCompletion.create(
+    response_post = client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[{"role": "user", "content": prompt_post}],
         max_tokens=2048,
